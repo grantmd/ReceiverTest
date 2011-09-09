@@ -4,6 +4,8 @@
   Created by Myles Grant <myles@mylesgrant.com>
   See also: https://github.com/grantmd/QuadCopter
   
+  Adapted from: http://www.arduino.cc/cgi-bin/yabb2/YaBB.pl?num=1290626864/5
+  
   This program is free software: you can redistribute it and/or modify 
   it under the terms of the GNU General Public License as published by 
   the Free Software Foundation, either version 3 of the License, or 
@@ -18,21 +20,48 @@
   along with this program. If not, see <http://www.gnu.org/licenses/>. 
 */
 
-int throttlePin = 4;
-int throttle = 0;
+int channels[6]; // Channel-to-pin assignments
+int readings[6]; // Current values for the channels
 
 void setup(){
   Serial.begin(115200);
   
-  pinMode(throttlePin, INPUT);
+  // These may seem arbitrary, but they are what the AeroQuad software uses,
+  // so I am using the same, for consistency
+  channels[0] = 4; // Throttle
+  channels[1] = 2; // Aile / Yaw
+  channels[2] = 5; // Elev. / Pitch
+  channels[3] = 6; // Rudd. / Roll
+  channels[4] = 7; // Gear
+  channels[5] = 8; // Aux / Flt Mode
+  
+  // Assign all pins for reading
+  for (int i=0; i<6; i++){
+    pinMode(channels[i], INPUT);
+  }
 }
 
 void loop(){
-  int temp = pulseIn(throttlePin, HIGH, 20000);
-  if (temp != 0) throttle = temp;
+  int temp;
+  int i;
   
-  Serial.print("Throttle: ");
-  Serial.println(throttle, DEC);
+  // Read all the channels. Worst case, this will take 180us
+  for (i=0; i<6; i++){
+    temp = pulseIn(channels[i], HIGH, 20000); // Attempt to read a pulse for 20us
+    if (temp != 0) readings[i] = temp; // A value of 0 means that the read timed out, so we keep our previous value
+  }
+  
+  // Print what we got
+  for (i=0; i<6; i++){
+    Serial.print(readings[i], DEC);
+    
+    if (i<5){
+      Serial.print("  ");
+    }
+    else{
+      Serial.println();
+    }
+  }
   delay(5);
 }
 
