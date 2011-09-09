@@ -18,10 +18,21 @@
   along with this program. If not, see <http://www.gnu.org/licenses/>. 
 */
 
+int throttlePin = 4;
+int throttle = 0;
+
 void setup(){
   Serial.begin(115200);
+  
+  pinMode(throttlePin, INPUT);
 }
 
 void loop(){
+  int temp = pulseIn(throttlePin, HIGH, 20000);
+  if (temp != 0) throttle = temp;
+  
+  Serial.print("Throttle: ");
+  Serial.println(throttle, DEC);
+  delay(5);
 }
 
